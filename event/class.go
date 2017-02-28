@@ -167,4 +167,9 @@ func (c *Class) Finalize(rateLimit uint) {
 	if c.Example.QueryTime == 0 {
 		c.Example = nil
 	}
+
+	// cleanup
+	c.lastDb = ""
+	c.sample = false
+	c.outliers = 0
 }

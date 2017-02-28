@@ -147,6 +147,9 @@ func (m *Metrics) Finalize(rateLimit uint) {
 
 		// Update sum last because avg ^ needs the original value.
 		s.Sum = (s.Sum * float64(rateLimit)) + s.outlierSum
+
+		// cleanup
+		s.vals = []float64(nil)
 	}
 
 	for _, s := range m.NumberMetrics {
@@ -161,6 +164,9 @@ func (m *Metrics) Finalize(rateLimit uint) {
 
 		// Update sum last because avg ^ needs the original value.
 		s.Sum = (s.Sum * uint64(rateLimit)) + s.outlierSum
+
+		// cleanup
+		s.vals = []uint64(nil)
 	}
 
 	for _, s := range m.BoolMetrics {
