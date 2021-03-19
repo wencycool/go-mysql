@@ -69,6 +69,7 @@ type SlowLogParser struct {
 	inQuery     bool
 	headerLines uint
 	queryLines  uint64
+	queryCache  strings.Builder //high performance for many lines in one sql
 	bytesRead   uint64
 	lineOffset  uint64
 	endOffset   uint64
@@ -341,7 +342,8 @@ func (p *SlowLogParser) parseQuery(line string) {
 		// query will be replaced by the real query "select field...."
 		// In case we are on a group of lines like in test23, lines 27~28, the
 		// query will be "use dbnameb" since the user executed a use command
-		p.event.Query = line
+		//p.event.Query = line
+		p.queryCache.WriteString(line)
 	} else if setRe.MatchString(line) {
 		if p.opt.Debug {
 			l.Println("set var")
@@ -352,12 +354,16 @@ func (p *SlowLogParser) parseQuery(line string) {
 			l.Println("query")
 		}
 		if p.queryLines > 0 {
-			p.event.Query += "\n" + line
+			//p.event.Query += "\n" + line
+			p.queryCache.WriteString("\n" + line)
 		} else {
-			p.event.Query = line
+			//p.event.Query = line
+			p.queryCache.WriteString(line)
 		}
 		p.queryLines++
 	}
+	p.event.Query = p.queryCache.String()
+	p.queryCache.Reset()
 }
 
 func (p *SlowLogParser) parseAdmin(line string) {
